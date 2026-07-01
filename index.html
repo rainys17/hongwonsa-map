@@ -4,47 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="referrer" content="origin-when-cross-origin">
-  
-  <title>홍원사 오시는 길</title>
+
+  <title>홍원사 지도</title>
 
   <style>
     * {
       box-sizing: border-box;
     }
 
+    html,
     body {
       margin: 0;
-      padding: 20px;
+      padding: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif;
       background: #ffffff;
       color: #111111;
     }
 
     .wrap {
-      max-width: 960px;
-      margin: 0 auto;
-    }
-
-    h1 {
-      margin: 0 0 12px;
-      font-size: 30px;
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      text-align: center;
-    }
-
-    .address {
-      margin: 0 0 24px;
-      font-size: 18px;
-      color: #555555;
-      text-align: center;
+      width: 100%;
+      padding: 0;
     }
 
     #map {
       width: 100%;
-      height: 430px;
+      height: 520px;
       border: 1px solid #dddddd;
-      border-radius: 14px;
+      border-radius: 12px;
       background: #f5f5f5;
     }
 
@@ -54,65 +40,34 @@
       gap: 12px;
       flex-wrap: wrap;
       margin-top: 22px;
+      margin-bottom: 8px;
     }
 
     .buttons a {
       display: inline-block;
-      padding: 12px 22px;
+      padding: 12px 24px;
       border-radius: 999px;
       background: #222222;
       color: #ffffff;
       text-decoration: none;
       font-size: 16px;
-    }
-
-    .status {
-      margin-top: 20px;
-      padding: 14px 16px;
-      border: 1px solid #eeeeee;
-      border-radius: 10px;
-      background: #fafafa;
-      font-size: 14px;
-      line-height: 1.6;
-      color: #555555;
-      word-break: break-all;
-    }
-
-    .status strong {
-      color: #111111;
-    }
-
-    .error {
-      color: #d00000;
-      font-weight: 700;
+      line-height: 1;
     }
 
     @media (max-width: 600px) {
-      body {
-        padding: 14px;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-
-      .address {
-        font-size: 15px;
-      }
-
       #map {
-        height: 360px;
+        height: 380px;
+      }
+
+      .buttons {
+        gap: 8px;
+        margin-top: 16px;
       }
 
       .buttons a {
         font-size: 14px;
         padding: 10px 16px;
       }
-    }
-
-    #status,
-    #statusBox {
-      display: none;
     }
   </style>
 
@@ -121,30 +76,16 @@
       document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("map").innerHTML =
           '<div style="padding:30px; color:#d00000; font-weight:700;">네이버 지도 인증 실패</div>';
-
-        document.getElementById("status").innerHTML =
-          '<strong class="error">네이버 지도 인증 실패</strong><br>' +
-          'Client ID 또는 네이버 콘솔의 Web 서비스 URL 설정을 확인해야 합니다.<br><br>' +
-          '현재 실행 주소: ' + window.location.origin;
       });
     };
   </script>
 
-  <!-- 
-    아래 YOUR_CLIENT_ID 자리에 네이버 Client ID만 넣으세요.
-    Client Secret은 넣지 않습니다.
-  -->
+  <!-- YOUR_CLIENT_ID 자리에 네이버 Client ID만 넣으세요. Client Secret은 넣지 않습니다. -->
   <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=uyicxqd82e"></script>
 </head>
 
 <body>
   <main class="wrap">
-    <h1>홍원사 오시는 길</h1>
-
-    <p class="address">
-      서울특별시 강서구 양천로49길 56-12
-    </p>
-
     <div id="map"></div>
 
     <div class="buttons">
@@ -156,53 +97,23 @@
         Google Maps에서 보기
       </a>
     </div>
-
-    <div id="status" class="status">
-      <strong>상태</strong><br>
-      HTML 로드 완료<br>
-      현재 실행 주소: <span id="originText"></span>
-    </div>
   </main>
 
   <script>
     const HONGWONSA_LAT = 37.5721431;
     const HONGWONSA_LNG = 126.8406226;
 
-    const statusBox = document.getElementById("status");
-    const originText = document.getElementById("originText");
-
-    originText.textContent = window.location.origin;
-
-    function showStatus(message, isError) {
-      statusBox.innerHTML =
-        '<strong class="' + (isError ? 'error' : '') + '">상태</strong><br>' +
-        message + '<br><br>' +
-        '현재 실행 주소: ' + window.location.origin;
-    }
-
-    function showMapError(message) {
-      document.getElementById("map").innerHTML =
-        '<div style="padding:30px; color:#d00000; font-weight:700;">' +
-        '지도를 표시하는 중 오류가 발생했습니다.<br>' +
-        message +
-        '</div>';
-    }
-
     try {
-      if (typeof naver === "undefined") {
-        throw new Error("naver 객체가 없습니다. 네이버 지도 스크립트가 정상 로드되지 않았습니다.");
-      }
-
-      if (!naver.maps) {
-        throw new Error("naver.maps 객체가 없습니다. Client ID 또는 지도 API 설정을 확인해야 합니다.");
-      }
-
       const hongwonsa = new naver.maps.LatLng(HONGWONSA_LAT, HONGWONSA_LNG);
 
       const map = new naver.maps.Map("map", {
         center: hongwonsa,
         zoom: 17,
+        mapTypeId: naver.maps.MapTypeId.NORMAL,
         zoomControl: true,
+        zoomControlOptions: {
+          position: naver.maps.Position.TOP_RIGHT
+        },
         mapTypeControl: true
       });
 
@@ -214,9 +125,8 @@
 
       const infoWindow = new naver.maps.InfoWindow({
         content:
-          '<div style="padding:10px 14px; min-width:190px; line-height:1.45;">' +
-          '<strong style="font-size:15px;">홍원사</strong><br>' +
-          '<span style="font-size:13px; color:#555;">서울특별시 강서구 양천로49길 56-12</span>' +
+          '<div style="padding:10px 16px; min-width:90px; text-align:center;">' +
+          '<strong style="font-size:15px;">홍원사</strong>' +
           '</div>'
       });
 
@@ -226,11 +136,19 @@
         infoWindow.open(map, marker);
       });
 
-      showStatus("네이버 지도 로드 완료", false);
+      setTimeout(function () {
+        naver.maps.Event.trigger(map, "resize");
+        map.setCenter(hongwonsa);
+      }, 500);
+
+      setTimeout(function () {
+        naver.maps.Event.trigger(map, "resize");
+        map.setCenter(hongwonsa);
+      }, 1500);
     } catch (error) {
       console.error(error);
-      showMapError(error.message);
-      showStatus("지도 실행 오류<br>" + error.message, true);
+      document.getElementById("map").innerHTML =
+        '<div style="padding:30px; color:#d00000; font-weight:700;">지도를 표시하는 중 오류가 발생했습니다.</div>';
     }
   </script>
 </body>
