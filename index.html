@@ -20,71 +20,100 @@
     }
 
     .wrap {
-      width: 100%;
-      max-width: 900px;
+      max-width: 960px;
       margin: 0 auto;
-      padding: 16px;
+      padding: 24px 16px;
+      text-align: center;
     }
 
     h1 {
-      margin: 0 0 8px;
-      font-size: 22px;
+      margin: 0 0 10px;
+      font-size: 28px;
       font-weight: 700;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.04em;
     }
 
     .address {
-      margin: 0 0 14px;
-      font-size: 15px;
-      line-height: 1.5;
+      margin: 0 0 24px;
+      font-size: 17px;
       color: #555555;
     }
 
     #map {
       width: 100%;
-      height: 420px;
+      height: 430px;
       border: 1px solid #dddddd;
-      border-radius: 12px;
+      border-radius: 16px;
       overflow: hidden;
-      background: #f5f5f5;
+      background: #f7f7f7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #777777;
+      line-height: 1.6;
     }
 
     .buttons {
       display: flex;
-      gap: 8px;
+      justify-content: center;
+      gap: 12px;
       flex-wrap: wrap;
-      margin-top: 12px;
+      margin-top: 22px;
     }
 
     .buttons a {
       display: inline-block;
-      padding: 9px 13px;
+      padding: 12px 22px;
       border-radius: 999px;
-      background: #222222;
-      color: #ffffff;
       text-decoration: none;
-      font-size: 14px;
+      font-size: 16px;
       line-height: 1;
     }
 
-    .status {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #777777;
+    .naver-btn {
+      background: #222222;
+      color: #ffffff;
+    }
+
+    .google-btn {
+      background: #ffffff;
+      color: #222222;
+      border: 1px solid #cccccc;
+    }
+
+    #statusBox {
+      margin-top: 24px;
+      padding: 16px;
+      border: 1px solid #eeeeee;
+      border-radius: 12px;
+      background: #fafafa;
+      text-align: left;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #555555;
+    }
+
+    .status-title {
+      font-weight: 700;
+      margin-bottom: 4px;
     }
 
     .error {
       color: #c62828;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     @media (max-width: 600px) {
       .wrap {
-        padding: 14px;
+        padding: 20px 12px;
       }
 
       h1 {
-        font-size: 20px;
+        font-size: 24px;
+      }
+
+      .address {
+        font-size: 15px;
       }
 
       #map {
@@ -92,8 +121,8 @@
       }
 
       .buttons a {
-        font-size: 13px;
-        padding: 8px 11px;
+        font-size: 14px;
+        padding: 10px 16px;
       }
     }
   </style>
@@ -107,19 +136,36 @@
       서울특별시 강서구 양천로49길 56-12
     </p>
 
-    <div id="map">지도를 불러오는 중입니다...</div>
+    <div id="map">
+      지도를 불러오는 중입니다...
+    </div>
 
     <div class="buttons">
-      <a href="https://map.naver.com/p/search/%ED%99%8D%EC%9B%90%EC%82%AC%20%EC%84%9C%EC%9A%B8%20%EA%B0%95%EC%84%9C%EA%B5%AC%20%EC%96%91%EC%B2%9C%EB%A1%9C49%EA%B8%B8%2056-12" target="_blank" rel="noopener">
+      <a
+        class="naver-btn"
+        href="https://map.naver.com/p/search/%ED%99%8D%EC%9B%90%EC%82%AC%20%EC%84%9C%EC%9A%B8%20%EA%B0%95%EC%84%9C%EA%B5%AC%20%EC%96%91%EC%B2%9C%EB%A1%9C49%EA%B8%B8%2056-12"
+        target="_blank"
+        rel="noopener"
+      >
         네이버 지도에서 보기
       </a>
 
-      <a href="https://www.google.com/maps/search/?api=1&query=37.5721431,126.8406226" target="_blank" rel="noopener">
+      <a
+        class="google-btn"
+        href="https://www.google.com/maps/search/?api=1&query=37.5721431,126.8406226"
+        target="_blank"
+        rel="noopener"
+      >
         Google Maps에서 보기
       </a>
     </div>
 
-    <div id="status" class="status">상태: HTML 로드 완료</div>
+    <div id="statusBox">
+      <div class="status-title">상태</div>
+      <div id="statusText">HTML 로드 완료</div>
+      <br />
+      <div>현재 실행 주소: <span id="currentOrigin"></span></div>
+    </div>
   </main>
 
   <script>
@@ -132,20 +178,79 @@
     const HONGWONSA_LAT = 37.5721431;
     const HONGWONSA_LNG = 126.8406226;
 
+    const mapElement = document.getElementById("map");
+    const statusText = document.getElementById("statusText");
+    const currentOrigin = document.getElementById("currentOrigin");
+
+    currentOrigin.textContent = window.location.origin;
+
     function setStatus(message, isError = false) {
-      const status = document.getElementById("status");
-      status.textContent = "상태: " + message;
-      status.className = isError ? "status error" : "status";
+      statusText.textContent = message;
+      statusText.className = isError ? "error" : "";
     }
 
     window.navermap_authFailure = function () {
-      setStatus("네이버 지도 인증 실패 - Client ID 또는 Web 서비스 URL 설정을 확인하세요.", true);
-      document.getElementById("map").innerHTML =
-        "네이버 지도 인증에 실패했습니다.<br>Client ID와 Web 서비스 URL을 확인해 주세요.";
+      setStatus("네이버 지도 인증 실패: Client ID 또는 Web 서비스 URL 설정을 확인해야 합니다.", true);
+      mapElement.innerHTML =
+        "<div><strong>네이버 지도 인증 실패</strong><br>Client ID와 Web 서비스 URL을 확인해 주세요.</div>";
     };
 
-    window.initHongwonsaMap = function () {
+    function loadNaverMapScript() {
+      if (!NAVER_CLIENT_ID || NAVER_CLIENT_ID.includes("여기에")) {
+        setStatus("Client ID가 아직 입력되지 않았습니다.", true);
+        mapElement.innerHTML =
+          "<div><strong>Client ID 미입력</strong><br>index.html에서 NAVER_CLIENT_ID를 입력해 주세요.</div>";
+        return;
+      }
+
+      setStatus("네이버 지도 스크립트 불러오는 중...");
+
+      const script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src =
+        "https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=" +
+        encodeURIComponent(NAVER_CLIENT_ID);
+
+      script.onload = function () {
+        setStatus("네이버 지도 스크립트 로드 완료. 지도 객체 확인 중...");
+        waitForNaverMapObject();
+      };
+
+      script.onerror = function () {
+        setStatus("네이버 지도 스크립트 로드 실패", true);
+        mapElement.innerHTML =
+          "<div><strong>스크립트 로드 실패</strong><br>네이버 지도 API 주소를 불러오지 못했습니다.</div>";
+      };
+
+      document.head.appendChild(script);
+    }
+
+    function waitForNaverMapObject() {
+      let count = 0;
+      const maxCount = 30;
+
+      const timer = setInterval(function () {
+        count++;
+
+        if (window.naver && window.naver.maps) {
+          clearInterval(timer);
+          initHongwonsaMap();
+          return;
+        }
+
+        if (count >= maxCount) {
+          clearInterval(timer);
+          setStatus("네이버 지도 객체가 생성되지 않았습니다. Client ID 또는 Web 서비스 URL 설정 문제일 가능성이 큽니다.", true);
+          mapElement.innerHTML =
+            "<div><strong>지도 실행 오류</strong><br>naver.maps 객체가 생성되지 않았습니다.<br>네이버 콘솔 설정을 확인해 주세요.</div>";
+        }
+      }, 200);
+    }
+
+    function initHongwonsaMap() {
       try {
+        mapElement.innerHTML = "";
+
         const hongwonsa = new naver.maps.LatLng(HONGWONSA_LAT, HONGWONSA_LNG);
 
         const map = new naver.maps.Map("map", {
@@ -165,14 +270,11 @@
         });
 
         const infoWindow = new naver.maps.InfoWindow({
-          content: `
-            <div style="padding:10px 14px; min-width:180px; line-height:1.45;">
-              <strong style="font-size:15px;">홍원사</strong><br>
-              <span style="font-size:13px; color:#555;">
-                서울특별시 강서구 양천로49길 56-12
-              </span>
-            </div>
-          `
+          content:
+            '<div style="padding:10px 14px; min-width:190px; line-height:1.45;">' +
+            '<strong style="font-size:15px;">홍원사</strong><br>' +
+            '<span style="font-size:13px; color:#555;">서울특별시 강서구 양천로49길 56-12</span>' +
+            '</div>'
         });
 
         infoWindow.open(map, marker);
@@ -184,33 +286,12 @@
         setStatus("네이버 지도 로드 완료");
       } catch (error) {
         console.error(error);
-        setStatus("지도 초기화 오류 - 브라우저 개발자도구 Console 확인 필요", true);
-        document.getElementById("map").innerHTML =
-          "지도를 표시하는 중 오류가 발생했습니다.";
+        setStatus("지도 실행 오류: " + error.message, true);
+        mapElement.innerHTML =
+          "<div><strong>지도 실행 오류</strong><br>" +
+          error.message +
+          "</div>";
       }
-    };
-
-    function loadNaverMapScript() {
-      if (!NAVER_CLIENT_ID || NAVER_CLIENT_ID.includes("여기에")) {
-        setStatus("Client ID가 아직 입력되지 않았습니다.", true);
-        document.getElementById("map").innerHTML =
-          "index.html에서 NAVER_CLIENT_ID를 입력해 주세요.";
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.type = "text/javascript";
-      script.src =
-        "https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=" +
-        encodeURIComponent(NAVER_CLIENT_ID) +
-        "&callback=initHongwonsaMap";
-      script.onerror = function () {
-        setStatus("네이버 지도 스크립트 로드 실패", true);
-        document.getElementById("map").innerHTML =
-          "네이버 지도 스크립트를 불러오지 못했습니다.";
-      };
-
-      document.head.appendChild(script);
     }
 
     loadNaverMapScript();
